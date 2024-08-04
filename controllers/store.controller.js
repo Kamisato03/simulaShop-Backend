@@ -89,22 +89,39 @@ export const calculateCycleBenefits = async (req, res) => {
     // Iterar sobre los productos seleccionados para el ciclo
     for (let product of store.inventory) {
       if (product.selectedForCycle) {
-        // Calcular los beneficios para el producto
-        const productBenefits = product.salePrice * product.demand;
-        totalBenefits += productBenefits;
+        if (product.demand < product.availableUnits) {
+          // Calcular los beneficios para el producto cuando la demanda es menor a las unidades disponibles
+          const productBenefits = product.salePrice * product.demand;
+          totalBenefits += productBenefits;
 
-        // Restar la demanda a las unidades disponibles
-        product.availableUnits -= product.demand;
+          // Restar la demanda a las unidades disponibles
+          product.availableUnits -= product.demand;
 
-        // Guardar los datos históricos del producto
-        product.historicalData.push({
-          cycleNumber,
-          demand: product.demand,
-          purchasePrice: product.purchasePrice,
-          salePrice: product.salePrice,
-          saleUnits: product.demand,
-        });
+          // Guardar los datos históricos del producto
+          product.historicalData.push({
+            cycleNumber,
+            demand: product.demand,
+            purchasePrice: product.purchasePrice,
+            salePrice: product.salePrice,
+            saleUnits: product.demand,
+          });
+        } else {
+          // Calcular los beneficios para el producto cuando la demanda supera las unidades disponibles
+          const productBenefits = product.salePrice * product.availableUnits;
+          totalBenefits += productBenefits;
 
+          // Guardar los datos históricos del producto
+          product.historicalData.push({
+            cycleNumber,
+            demand: product.demand,
+            purchasePrice: product.purchasePrice,
+            salePrice: product.salePrice,
+            saleUnits: product.availableUnits,
+          });
+
+          // Restar las unidades que se vendieron a las unidades disponibles
+          product.availableUnits -= product.availableUnits;
+        }
         // Guardar el producto actualizado
         await product.save();
       }
