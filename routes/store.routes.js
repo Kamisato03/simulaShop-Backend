@@ -1,6 +1,6 @@
 import express from 'express';
-import { validateStore } from './middlewares/storeValidator.js'; // Asegúrate de ajustar la ruta según tu estructura de archivos
-import { createStore, getAllStores, getStore } from './controllers/storeController.js'; // Ajusta la ruta según tu estructura de archivos
+import { validateStore } from '../middlewares/validatorStore.js'; // Asegúrate de ajustar la ruta según tu estructura de archivos
+import { createStore, getAllStores, getStore } from '../controllers/store.controller.js'; // Ajusta la ruta según tu estructura de archivos
 
 const router = express.Router();
 

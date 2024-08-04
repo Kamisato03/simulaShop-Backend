@@ -14,18 +14,32 @@ const storeSchema = new Schema({
     type: Number,
     required: true,
   },
-  initialBenefits: {
+  money: {
     type: Number,
     required: true,
   },
-  lastBenefits: {
-    type: Number,
-    required: true,
-  },
-  totalEarnings: {
-    type: Number,
-    required: true,
-  },
+  cycleData: [
+    {
+      cycleNumber: {
+        type: Number,
+        required: true,
+      },
+      lastBenefits: {
+        type: Number,
+        default: 0,
+      },
+      totalEarnings: {
+        type: Number,
+        default: 0,
+      },
+    },
+  ],
+  inventory: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Product",
+    },
+  ],
 });
 
 export const Store = model("Store", storeSchema);
