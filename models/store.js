@@ -14,6 +14,10 @@ const storeSchema = new Schema({
     type: Number,
     required: true,
   },
+  currentCycle: {
+    type: Number,
+    default: 1,
+  },
   money: {
     type: Number,
     required: true,

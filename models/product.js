@@ -30,13 +30,23 @@ const productSchema = new Schema({
     type: Number,
     required: true,
   },
-  demand: {
+  demandMin: {
+    type: Number,
+    required: true,
+  },
+  demandMax: {
     type: Number,
     required: true,
   },
   historicalData: [
     {
       cycleNumber: {
+        type: Number,
+      },
+      demandMin: {
+        type: Number,
+      },
+      demandMax: {
         type: Number,
       },
       demand: {

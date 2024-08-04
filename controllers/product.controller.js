@@ -12,7 +12,8 @@ export const createProduct = async (req, res) => {
     purchasePrice,
     selectedForCycle,
     availableUnits,
-    demand,
+    demandMin,
+    demandMax,
   } = req.body;
 
   try {
@@ -25,7 +26,8 @@ export const createProduct = async (req, res) => {
       purchasePrice,
       selectedForCycle,
       availableUnits,
-      demand,
+      demandMin,
+      demandMax,
     });
 
     const savedProduct = await product.save();
@@ -53,7 +55,7 @@ export const getAllProducts = async (req, res) => {
       path: "inventory",
       match: { isDeleted: false }, // Filtra productos no eliminados
     });
-    
+
     if (!store) {
       return res.status(404).json({ error: "Tienda no encontrada" });
     }
@@ -76,7 +78,8 @@ export const updateProduct = async (req, res) => {
     purchasePrice,
     selectedForCycle,
     availableUnits,
-    demand,
+    demandMin,
+    demandMax,
     isDeleted,
   } = req.body;
 
@@ -96,7 +99,8 @@ export const updateProduct = async (req, res) => {
         purchasePrice,
         selectedForCycle,
         availableUnits,
-        demand,
+        demandMin,
+        demandMax,
         isDeleted,
       },
       { new: true }
@@ -128,7 +132,7 @@ export const deleteProduct = async (req, res) => {
     // Marcar el producto como eliminado en la colección de productos
     const updatedProduct = await Product.findByIdAndUpdate(
       productId,
-      { isDeleted: true },
+      { isDeleted: true, selectedForCycle: false },
       { new: true }
     );
     if (!updatedProduct) {
@@ -149,15 +153,19 @@ export const addProductUnits = async (req, res) => {
 
   try {
     // Buscar la tienda por ID
-    const store = await Store.findById(storeId).populate('inventory');
+    const store = await Store.findById(storeId).populate("inventory");
     if (!store) {
       return res.status(404).json({ error: "Tienda no encontrada" });
     }
 
     // Buscar el producto en el inventario de la tienda
-    const product = store.inventory.find(item => item._id.toString() === productId);
+    const product = store.inventory.find(
+      (item) => item._id.toString() === productId
+    );
     if (!product) {
-      return res.status(404).json({ error: "Producto no encontrado en el inventario de la tienda" });
+      return res.status(404).json({
+        error: "Producto no encontrado en el inventario de la tienda",
+      });
     }
 
     // Calcular el costo total de las unidades adicionales
@@ -165,7 +173,9 @@ export const addProductUnits = async (req, res) => {
 
     // Verificar si la tienda tiene suficiente dinero
     if (store.money < totalCost) {
-      return res.status(400).json({ error: "Fondos insuficientes para comprar unidades adicionales" });
+      return res.status(400).json({
+        error: "Fondos insuficientes para comprar unidades adicionales",
+      });
     }
 
     // Actualizar las unidades disponibles y el dinero de la tienda
@@ -176,7 +186,9 @@ export const addProductUnits = async (req, res) => {
     await product.save();
     await store.save();
 
-    return res.status(200).json({ msg: "Unidades agregadas y dinero actualizado", product, store });
+    return res
+      .status(200)
+      .json({ msg: "Unidades agregadas y dinero actualizado", product, store });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "Error del servidor", error });

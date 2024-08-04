@@ -27,8 +27,9 @@ export const createStore = async (req, res) => {
         category: baseProduct.category,
         salePrice: baseProduct.salePrice,
         purchasePrice: baseProduct.purchasePrice,
-        availableUnits: 0,
-        demand: 0,
+        availableUnits: 15,
+        demandMin: 10,
+        demandMax: 20,
       });
     });
 
@@ -75,7 +76,6 @@ export const getStore = async (req, res) => {
 // Función para calcular los beneficios de un ciclo de facturación
 export const calculateCycleBenefits = async (req, res) => {
   const { storeId } = req.params;
-  const { cycleNumber } = req.body;
 
   try {
     // Buscar la tienda por ID
@@ -85,25 +85,33 @@ export const calculateCycleBenefits = async (req, res) => {
     }
 
     let totalBenefits = 0;
+    const cicloActual = store.currentCycle;
 
     // Iterar sobre los productos seleccionados para el ciclo
     for (let product of store.inventory) {
       if (product.selectedForCycle) {
-        if (product.demand < product.availableUnits) {
+        const demand =
+          Math.floor(
+            Math.random() * (product.demandMax - product.demandMin + 1)
+          ) + product.demandMin;
+        if (demand <= product.availableUnits) {
           // Calcular los beneficios para el producto cuando la demanda es menor a las unidades disponibles
-          const productBenefits = product.salePrice * product.demand;
+          const productBenefits = product.salePrice * demand;
+          console.log("productBenefits:", productBenefits);
           totalBenefits += productBenefits;
 
           // Restar la demanda a las unidades disponibles
-          product.availableUnits -= product.demand;
+          product.availableUnits -= demand;
 
           // Guardar los datos históricos del producto
           product.historicalData.push({
-            cycleNumber,
-            demand: product.demand,
+            cycleNumber: store.currentCycle,
+            demandMin: product.demandMin,
+            demandMax: product.demandMax,
+            demand: demand,
             purchasePrice: product.purchasePrice,
             salePrice: product.salePrice,
-            saleUnits: product.demand,
+            saleUnits: demand,
           });
         } else {
           // Calcular los beneficios para el producto cuando la demanda supera las unidades disponibles
@@ -112,8 +120,10 @@ export const calculateCycleBenefits = async (req, res) => {
 
           // Guardar los datos históricos del producto
           product.historicalData.push({
-            cycleNumber,
-            demand: product.demand,
+            cycleNumber: store.currentCycle,
+            demandMin: product.demandMin,
+            demandMax: product.demandMax,
+            demand: demand,
             purchasePrice: product.purchasePrice,
             salePrice: product.salePrice,
             saleUnits: product.availableUnits,
@@ -123,13 +133,18 @@ export const calculateCycleBenefits = async (req, res) => {
           product.availableUnits -= product.availableUnits;
         }
         // Guardar el producto actualizado
+        if (product.availableUnits == 0) {
+          product.selectedForCycle = false;
+        }
         await product.save();
       }
     }
 
+    console.log(totalBenefits);
+
     // Actualizar los datos del ciclo de la tienda
     store.cycleData.push({
-      cycleNumber,
+      cycleNumber: store.currentCycle,
       lastBenefits: totalBenefits,
       totalEarnings:
         store.cycleData.reduce((sum, cycle) => sum + cycle.lastBenefits, 0) +
@@ -138,13 +153,15 @@ export const calculateCycleBenefits = async (req, res) => {
 
     // Sumar los beneficios al dinero de la tienda
     store.money += totalBenefits;
+    store.currentCycle += 1;
 
     // Guardar la tienda actualizada
     await store.save();
 
-    return res
-      .status(200)
-      .json({ msg: "Beneficios del ciclo calculados y guardados", store });
+    return res.status(200).json({
+      msg: `Beneficios del ciclo ${cicloActual} calculados y guardados`,
+      store,
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "Error del servidor", error });

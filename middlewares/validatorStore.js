@@ -16,21 +16,11 @@ export const validateStore = [
     .withMessage('El número de ciclos debe ser un entero no negativo.')
     .notEmpty()
     .withMessage('El número de ciclos es requerido.'),
-  body('initialBenefits')
+  body('money')
     .isFloat({ min: 0 })
     .withMessage('Los beneficios iniciales deben ser un número no negativo.')
     .notEmpty()
     .withMessage('Los beneficios iniciales son requeridos.'),
-  body('lastBenefits')
-    .isFloat({ min: 0 })
-    .withMessage('Los últimos beneficios deben ser un número no negativo.')
-    .notEmpty()
-    .withMessage('Los últimos beneficios son requeridos.'),
-  body('totalEarnings')
-    .isFloat({ min: 0 })
-    .withMessage('Las ganancias totales deben ser un número no negativo.')
-    .notEmpty()
-    .withMessage('Las ganancias totales son requeridas.'),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
