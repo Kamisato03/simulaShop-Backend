@@ -180,6 +180,7 @@ export const addProductUnits = async (req, res) => {
 
     // Actualizar las unidades disponibles y el dinero de la tienda
     product.availableUnits += additionalUnits;
+    console.log(product.availableUnits);
     store.money -= totalCost;
 
     // Guardar los cambios en la base de datos

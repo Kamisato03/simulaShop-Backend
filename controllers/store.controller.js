@@ -49,7 +49,7 @@ export const createStore = async (req, res) => {
 // Obtiene una lista de todas las tiendas
 export const getAllStores = async (req, res) => {
   try {
-    const stores = await Store.find();
+    const stores = await Store.find().populate("inventory");
     return res.status(200).json({ stores });
   } catch (error) {
     console.log(error);
@@ -62,7 +62,7 @@ export const getStore = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const store = await Store.findById(id);
+    const store = await Store.findById(id).populate("inventory");
     if (!store) {
       return res.status(404).json({ error: "Tienda no encontrada" });
     }
@@ -79,7 +79,7 @@ export const calculateCycleBenefits = async (req, res) => {
 
   try {
     // Buscar la tienda por ID
-    const store = await Store.findById(storeId).populate("inventory");
+    let store = await Store.findById(storeId).populate("inventory");
     if (!store) {
       return res.status(404).json({ error: "Tienda no encontrada" });
     }
@@ -157,6 +157,7 @@ export const calculateCycleBenefits = async (req, res) => {
 
     // Guardar la tienda actualizada
     await store.save();
+    store = await Store.findById(storeId).populate("inventory");
 
     return res.status(200).json({
       msg: `Beneficios del ciclo ${cicloActual} calculados y guardados`,
