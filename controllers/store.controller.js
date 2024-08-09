@@ -41,7 +41,6 @@ export const createStore = async (req, res) => {
       .status(201)
       .json({ msg: "Tienda creada con éxito", store: savedStore });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: "Error del servidor", error });
   }
 };
@@ -52,7 +51,6 @@ export const getAllStores = async (req, res) => {
     const stores = await Store.find().populate("inventory");
     return res.status(200).json({ stores });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: "Error del servidor", error });
   }
 };
@@ -68,7 +66,6 @@ export const getStore = async (req, res) => {
     }
     return res.status(200).json({ store });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: "Error del servidor", error });
   }
 };
@@ -97,7 +94,6 @@ export const calculateCycleBenefits = async (req, res) => {
         if (demand <= product.availableUnits) {
           // Calcular los beneficios para el producto cuando la demanda es menor a las unidades disponibles
           const productBenefits = product.salePrice * demand;
-          console.log("productBenefits:", productBenefits);
           totalBenefits += productBenefits;
 
           // Restar la demanda a las unidades disponibles
@@ -140,8 +136,6 @@ export const calculateCycleBenefits = async (req, res) => {
       }
     }
 
-    console.log(totalBenefits);
-
     // Actualizar los datos del ciclo de la tienda
     store.cycleData.push({
       cycleNumber: store.currentCycle,
@@ -164,7 +158,6 @@ export const calculateCycleBenefits = async (req, res) => {
       store,
     });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: "Error del servidor", error });
   }
 };
