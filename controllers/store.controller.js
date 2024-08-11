@@ -70,6 +70,21 @@ export const getStore = async (req, res) => {
   }
 };
 
+// Obtiene una los datos de los ciclos realizados de una tienda
+export const getStoreData = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const store = await Store.findById(id);
+    if (!store) {
+      return res.status(404).json({ error: "Tienda no encontrada" });
+    }
+    return res.status(200).json({ cycleData: store.cycleData });
+  } catch (error) {
+    return res.status(500).json({ error: "Error del servidor", error });
+  }
+};
+
 // Función para calcular los beneficios de un ciclo de facturación
 export const calculateCycleBenefits = async (req, res) => {
   const { storeId } = req.params;
@@ -91,12 +106,16 @@ export const calculateCycleBenefits = async (req, res) => {
           Math.floor(
             Math.random() * (product.demandMax - product.demandMin + 1)
           ) + product.demandMin;
+
+        let unitsToDeduct = 0;
+
         if (demand <= product.availableUnits) {
           // Calcular los beneficios para el producto cuando la demanda es menor a las unidades disponibles
           const productBenefits = product.salePrice * demand;
           totalBenefits += productBenefits;
 
           // Restar la demanda a las unidades disponibles
+          unitsToDeduct = demand;
           product.availableUnits -= demand;
 
           // Guardar los datos históricos del producto
@@ -126,9 +145,11 @@ export const calculateCycleBenefits = async (req, res) => {
           });
 
           // Restar las unidades que se vendieron a las unidades disponibles
-          product.availableUnits -= product.availableUnits;
+          unitsToDeduct = product.availableUnits;
+          product.availableUnits = 0; // Se vendieron todas las unidades
         }
-        // Guardar el producto actualizado
+
+        // Actualizar el producto en el inventario
         if (product.availableUnits == 0) {
           product.selectedForCycle = false;
         }

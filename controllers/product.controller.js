@@ -84,7 +84,7 @@ export const updateProduct = async (req, res) => {
   } = req.body;
 
   try {
-    const store = await Store.findById(storeId);
+    let store = await Store.findById(storeId);
     if (!store) {
       return res.status(404).json({ error: "Tienda no encontrada" });
     }
@@ -110,9 +110,10 @@ export const updateProduct = async (req, res) => {
       return res.status(404).json({ error: "Producto no encontrado" });
     }
 
+    store = await Store.findById(storeId).populate("inventory");
     return res
       .status(200)
-      .json({ msg: "Producto actualizado con éxito", product: updatedProduct });
+      .json({ msg: "Producto actualizado con éxito", product: updatedProduct, store: store });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "Error del servidor", error });
@@ -187,6 +188,21 @@ export const addProductUnits = async (req, res) => {
     await product.save();
     await store.save();
 
+    // Buscar el producto en su modelo independiente
+    const productInCatalog = await Product.findById(productId);
+    if (!productInCatalog) {
+      return res.status(404).json({
+        error: "Producto no encontrado en el catálogo de productos",
+      });
+    }
+
+    // Actualizar las unidades disponibles en el modelo de producto independiente
+    productInCatalog.availableUnits += additionalUnits;
+
+    // Guardar los cambios en el modelo de producto independiente
+    await productInCatalog.save();
+    console.log(product);
+    console.log(productInCatalog);
     return res
       .status(200)
       .json({ msg: "Unidades agregadas y dinero actualizado", product, store });
