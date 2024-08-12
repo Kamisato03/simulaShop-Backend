@@ -24,6 +24,9 @@ const storeSchema = new Schema({
   },
   cycleData: [
     {
+      moneyInCycle: {
+        type: Number,
+      },
       cycleNumber: {
         type: Number,
         required: true,

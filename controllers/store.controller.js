@@ -159,6 +159,7 @@ export const calculateCycleBenefits = async (req, res) => {
 
     // Actualizar los datos del ciclo de la tienda
     store.cycleData.push({
+      moneyInCycle: store.money,
       cycleNumber: store.currentCycle,
       lastBenefits: totalBenefits,
       totalEarnings:
