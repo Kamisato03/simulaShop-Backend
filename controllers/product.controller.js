@@ -181,7 +181,6 @@ export const addProductUnits = async (req, res) => {
 
     // Actualizar las unidades disponibles y el dinero de la tienda
     product.availableUnits += additionalUnits;
-    console.log(product.availableUnits);
     store.money -= totalCost;
 
     // Guardar los cambios en la base de datos
@@ -201,8 +200,6 @@ export const addProductUnits = async (req, res) => {
 
     // Guardar los cambios en el modelo de producto independiente
     await productInCatalog.save();
-    console.log(product);
-    console.log(productInCatalog);
     return res
       .status(200)
       .json({ msg: "Unidades agregadas y dinero actualizado", product, store });
