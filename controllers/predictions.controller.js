@@ -27,7 +27,7 @@ export const trainAndPredict = async (req, res) => {
     for (const product of products) {
       const historicalData = product.historicalData;
       // Si no hay historicalData o si está vacío, pasar al siguiente producto
-      if (!historicalData || historicalData.length === 0) {
+      if (!historicalData || historicalData.length === 0 || product.selectedForCycle === false) {
         continue; // Saltar al siguiente producto
       }
       // Preparar los datos
