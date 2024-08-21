@@ -3,8 +3,8 @@ import { Store } from "../models/store.js";
 
 // Crea un nuevo producto y lo agrega al inventario de una tienda específica
 export const createProduct = async (req, res) => {
+  const { storeId } = req.params;
   const {
-    storeId,
     name,
     image,
     category,
@@ -16,7 +16,12 @@ export const createProduct = async (req, res) => {
     demandMax,
   } = req.body;
 
+  console.log(req.body);
   try {
+    const store = await Store.findById(storeId);
+    if (!store) {
+      return res.status(404).json({ error: "Tienda no encontrada" });
+    }
     // Crear el nuevo producto
     const product = new Product({
       name,
@@ -31,11 +36,8 @@ export const createProduct = async (req, res) => {
     });
 
     const savedProduct = await product.save();
-
-    // Agregar el producto al inventario de la tienda
-    await Store.findByIdAndUpdate(storeId, {
-      $push: { inventory: savedProduct._id },
-    });
+    store.inventory.push(savedProduct._id);
+    await store.save();
 
     return res
       .status(201)
@@ -111,9 +113,11 @@ export const updateProduct = async (req, res) => {
     }
 
     store = await Store.findById(storeId).populate("inventory");
-    return res
-      .status(200)
-      .json({ msg: "Producto actualizado con éxito", product: updatedProduct, store: store });
+    return res.status(200).json({
+      msg: "Producto actualizado con éxito",
+      product: updatedProduct,
+      store: store,
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: "Error del servidor", error });
